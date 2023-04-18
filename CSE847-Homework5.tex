@@ -1,0 +1,433 @@
+\documentclass[11pt]{article}
+\usepackage{fullpage}
+\usepackage{url}
+\usepackage{color}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\textheight=8.85in
+\usepackage{matlab-prettifier}
+\pagestyle{myheadings}
+\usepackage{subcaption}
+
+\setlength{\tabcolsep}{0in}
+\begin{document}
+
+
+\thispagestyle {empty}
+
+\newcommand{\lsp}[1]{\large\renewcommand{\baselinestretch}{#1}\normalsize}
+\newcommand{\hsp}{\hspace{.2in}}
+\newcommand{\comment}[1]{}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}{Lemma}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{prop}{Proposition}[section]
+\newtheorem{problem}{Problem}[section]
+
+\newcommand{\R}{{\rm\hbox{I\kern-.15em R}}}
+\newcommand{\IR}{{\rm\hbox{I\kern-.15em R}}}
+\newcommand{\IN}{{\rm\hbox{I\kern-.15em N}}}
+\newcommand{\IZ}{{\sf\hbox{Z\kern-.40em Z}}}
+\newcommand{\IS}{{\rm\hbox{S\kern-.45em S}}}
+\newcommand{\Real}{I\!\!R}
+
+
+\newcommand{\linesep}{\vspace{.2cm}\hrule\vspace{0.2cm}}
+\newcommand{\categorysep}{\vspace{0.5cm}}
+\newcommand{\entrysep}{\vspace{0cm}}
+
+\newcommand{\category}[1]{\categorysep
+                  \noindent {\bf \large #1}
+              \linesep}
+
+\pagestyle{empty}
+
+\begin{center}
+{\large \textbf{CSE 847 (Spring 2023): Machine Learning--- Homework 5\\
+ Instructor: Jiayu Zhou \\
+  Balija Santoshkumar}} \\
+\href{mailto:balijasa@msu.edu}{balijasa@msu.edu}
+\end{center}
+\section{ Clustering: K-means}
+
+\begin{enumerate}
+\item  Elaborate the relationship between $k$-means and spectral relaxation of $k$-means. Is it possible that we obtain exact $k$-means solution using spectral relaxed $k$-means?
+\item Implementation of $k$-means. Submit all the source code to D2L along with a short report on your observation.
+\begin{itemize}
+	\item Implement the $k$-means in MATLAB using the alternating procedure introduced in the class (you will not get the credit if you use the build-in kmeans function in MATLAB).
+\item  Implement the spectral relaxation of $k$-means. Create a random dataset and compare the $k$-means and spectral relaxed $k$-means.
+\end{itemize}
+\end{enumerate}
+
+\textbf{Sol:}
+
+We assume that we have $n$ data points $\left\{x_i\right\}_{i=1}^n \in \mathbb{R}^m$, which we organize as columns in a matrix
+$$
+X=\left[x_1, x_2, \cdots, x_n\right] \in \mathbb{R}^{m \times n}
+$$
+
+
+The objective of K-means is reduce sum squared error(SSE)
+
+\begin{equation}
+	q_j=\sum_{v \in \pi_j}\left\|x_v-c_j\right\|^2
+\end{equation}
+where $c_j$ is the cluster center of the corresponding cluster
+Let $e$ be the vector of all ones with appropriate length. It is easy to see that $c_j=X_j e / n_j$, where $X_j$ is the data matrix of the $j$-th cluster.
+
+SSE can transformed into
+\begin{equation}
+	q_j=\sum_{j=1}^k\left(\operatorname{trace}\left(X_j^T X_j\right)-\frac{e^T}{\sqrt{n_j}} X_j^T X_j \frac{e}{\sqrt{n_j}}\right)
+\end{equation}
+
+Define the $n$-by- $k$ orthogonal matrix $Y$ as follows
+$$
+Y=\left(\begin{array}{cccc}
+	e / \sqrt{n_1} & & \\
+	& e / \sqrt{n_2} & \\
+	& & \vdots & \\
+	& & & e / \sqrt{n_k}
+\end{array}\right)
+$$
+Then
+$$
+Q(\Pi)=\operatorname{trace}\left(X^T X\right)-\operatorname{trace}\left(Y^T X^T X Y\right) .
+$$
+The $k$-means objective, minimization of $Q(\Pi)$, is equivalent to the maximization of trace $\left(Y^T X^T X Y\right)$ with $Y$ .
+
+In  spectral
+relaxation of k-means is instead of using this specific expression for Y , it is
+possible to use any arbitrary orthogonal matrix for Y . This leads to the relaxed maximization problem
+\begin{equation}
+	\max _{Y^T Y=I_k} \operatorname{trace}\left(Y^T X^T X Y\right)
+\end{equation}
+The first k vectors in the left singular matrix of X can produce the Y   that maximizes this expression in Eq.3
+we can see that both k-means and spectral k-means are trying to minimize the same error function, but spectral k-means is  first trying to project the dataset into a lower dimensional space which makes it easier to capture the complex clustering structures.
+
+The spectral-relaxed k-means become completely equivalent to k-means when the expression for Y becomes
+equal to the matrix mentioned in Eq. 2
+
+\\
+
+I have used fisheriris data set for K-means
+
+\\
+\textbf{Regular K-means}
+
+After implementation we see SSE as
+
+\begin{verbatim}
+SSE for k=3: 26.893170
+SSE for k=4: 26.067859
+SSE for k=5: 14.691709
+SSE for k=6: 11.985356
+SSE for k=7: 8.231259
+SSE for k=8: 6.774484
+SSE for k=9: 6.016505
+SSE for k=10: 5.094189
+\end{verbatim} 
+
+
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_3.png}
+		\caption{No of Clusters 3}
+		\label{fig:cluster3}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_4.png}
+		\caption{No of Clusters 4}
+		\label{fig:cluster4}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_5.png}
+		\caption{No of Clusters 5}
+		\label{fig:cluster5}
+	\end{subfigure}
+	
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_6.png}
+		\caption{No of Clusters 6}
+		\label{fig:cluster6}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_7.png}
+		\caption{No of Clusters7}
+		\label{fig:cluster7}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_8.png}
+		\caption{No of Clusters 8}
+		\label{fig:cluster8}
+	\end{subfigure}
+	
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_9.png}
+		\caption{No of Clusters 9}
+		\label{fig:cluster9}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_10.png}
+		\caption{No of Clusters 10}
+		\label{fig:cluster10}
+	\end{subfigure}
+	\caption{Cluster assignments with K-means}
+	\label{fig:clusterassignments}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.6\textwidth]{./Results/KMeans/SSE_Convergence.png}
+	\caption{Convergence of SSE with Clusters variation in KMeans}
+	\label{fig:SSEconvergence}
+\end{figure}
+
+\textbf{ spectral relaxation of $k$-means}
+
+
+After implementation we see Final SSE as
+
+\begin{verbatim}
+SSE for k=3: 145.287135
+SSE for k=4: 107.839511
+SSE for k=5: 127.624815
+SSE for k=6: 82.031575
+SSE for k=7: 106.387628
+SSE for k=8: 70.359438
+SSE for k=9: 69.009363
+SSE for k=10: 43.252894
+\end{verbatim} 
+
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_S3.png}
+		\caption{No of Clusters 3}
+		\label{fig:cluster3}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_S4.png}
+		\caption{No of Clusters 4}
+		\label{fig:cluster4}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_S5.png}
+		\caption{No of Clusters 5}
+		\label{fig:cluster5}
+	\end{subfigure}
+	
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_S6.png}
+		\caption{No of Clusters 6}
+		\label{fig:cluster6}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_S7.png}
+		\caption{No of Clusters7}
+		\label{fig:cluster7}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_S8.png}
+		\caption{No of Clusters 8}
+		\label{fig:cluster8}
+	\end{subfigure}
+	
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_S9.png}
+		\caption{No of Clusters 9}
+		\label{fig:cluster9}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{./Results/KMeans/Cluster_Arrangement_S10.png}
+		\caption{No of Clusters 10}
+		\label{fig:cluster10}
+	\end{subfigure}
+	\caption{Cluster assignments with Spectral relaxation K-means}
+	\label{fig:clusterassignments}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.6\textwidth]{./Results/KMeans/SSE_Convergence_S.png}
+	\caption{Convergence of SSE with Clusters variation in Spectral relaxation KMeans}
+	\label{fig:SSEconvergence}
+\end{figure}
+\clearpage
+
+\textbf{MATLAB Code}
+
+\begin{lstlisting}[style=Matlab-editor]
+	clear all
+	clc
+	close all
+	load fisheriris
+	data = meas
+	data = data(:,3:4);
+	num_clusters = [3:10];
+	SSE = zeros(1, size(num_clusters,2));
+	for i=1:size(num_clusters,2)
+	[cluster_assignments, cluster_centers] = kmeans_cluster(data, num_clusters(i),1);
+	SSE(i) = compute_SSE(data, cluster_assignments);
+	show_plot(data, cluster_assignments);
+	saveas(gcf, strcat('Results/KMeans/Cluster_Arrangement_S',int2str(num_clusters(i)),'.png'));
+	end
+	fig = figure; plot(num_clusters, SSE); xlabel('K'); ylabel('SSE'); title('Variation of SSE for different values of K');
+	saveas(gcf, strcat('Results/KMeans/SSE_Convergence_S.png'));
+	
+	
+	function [cluster_assignments, cluster_centers] = kmeans_cluster(raw_data, k, spectral)
+	%     Code to perform k-means clustering
+	%     INPUTS:
+	%         data     =  (n * m) matrix where n is the number of samples and m
+	%                     is the number of features
+	%         k        =  integer number of intended clusters
+	%         spectral =  boolean value representing spectral k-means if true,
+	%                     else standard k-means
+	% 
+	%     OUTPUTS:
+	%         cluster_assignments = labels assigned to the each samples in
+	%                               [1,k]
+	%         cluster_centers     = final clsuter centers found in the process
+	%                               of k-means
+	
+	% Assigning default values
+	if nargin < 3
+	if ~exist('spectral')
+	spectral=false;
+	end
+	end
+	
+	if spectral
+	% for spectral relaxation, map the data samples to k-dimensional
+	% feature space
+	[U, ~, ~] = svd(raw_data);
+	projection = U(:, 1:k);
+	rand_mat = rand(k,k);
+	orth_mat = orth(rand_mat);
+	data = projection * orth_mat;
+	else
+	data = raw_data;
+	end
+	
+	[num_samples, ~] = size(data);
+	cluster_assignments = zeros(num_samples, 1);
+	temp = randperm(num_samples);
+	cluster_center_idx = temp(1:k);
+	cluster_centers = data(cluster_center_idx, :);
+	change = inf;
+	count_iter = 0;
+	
+	while(change ~= 0)
+	% change represents the number cluster assignments that got changed
+	% in the current iteration
+	count_iter = count_iter+1;
+	prev_assignments = cluster_assignments;
+	
+	for cur_idx=1:num_samples
+	min_dist = inf;
+	min_idx = -1;
+	
+	% for each sample, find the cluster center which is at min
+	% distance
+	for cluster_idx = 1:k
+	cur_dist = norm(data(cur_idx,:) - cluster_centers(cluster_idx,:));
+	if(cur_dist < min_dist)
+	min_dist = cur_dist;
+	min_idx = cluster_idx;
+	end
+	end
+	cluster_assignments(cur_idx,1) = min_idx;
+	end
+	
+	for cluster_idx = 1:k
+	% get the mean of each cluster
+	cluster_centers(cluster_idx,:) = mean(data(cluster_assignments == cluster_idx,:));
+	end
+	
+	change = sum(prev_assignments ~= cluster_assignments);
+	%         fprintf('Number of changes in iter %d: %d\n', count_iter, change);
+	%         show_plot(raw_data, cluster_assignments);   % plot the clusters
+	end
+	
+	SSE = compute_SSE(raw_data, cluster_assignments);
+	fprintf('SSE for k=%d: %f\n', k, SSE);
+	
+	end
+	
+	
+	function [SSE] = compute_SSE(data, cluster_assignments)
+	% Function to compute Sum of Squared Error
+	% INPUTS:
+	%   data = the dataset used for clustering
+	%   cluster_assignments = labels for each sample in the data
+	%   cluster_centers = the centers found for each cluster
+	% 
+	% OUTPUT:
+	%   SSE = final sum of squared errors for the cluster config.
+	
+	num_clusters = size(unique(cluster_assignments),1);
+	SSE = 0;
+	for cluster_no = 1:num_clusters
+	cluster_center = mean(data(cluster_assignments == cluster_no,:));
+	SSE = SSE + norm(data(cluster_assignments==cluster_no,:)-cluster_center)^2;
+	end
+	end
+	
+	function [] = show_plot(data, labels)
+	%   Function to plot the cluster config.
+	%   INPUTS:
+	%       data = dataset used for clustering
+	%       labels = the cluster label assigned to each sample
+	% 
+	%   OUTPUT:
+	%       A plot representing the cluster config.
+	
+	k = size(unique(labels),1);
+	[~, num_features] = size(data);
+	
+	
+	if num_features>2
+	pcs = pca(data);
+	reduced_data = data * pcs(:, 1:2);
+	else
+	reduced_data = data;
+	end
+	
+	figure;
+	hold on;
+	gscatter(reduced_data(:,1),reduced_data(:,2),labels);
+	title(strcat('KMeans Clustering Arrangement for K=', int2str(k)));
+	hold off;
+	pause(2);
+	end
+	
+	
+	
+ \end{lstlisting}
+\clearpage
+
+\section{Principle Component Analysis}
+
+\begin{enumerate}
+	\item  Suppose we have the following data points in $2 \mathrm{~d}$ space $(0,0),(-1,2),(-3,6),(1,-2),(3,-6)$.
+	\begin{itemize}
+\item Draw them on a 2-d plot, each data point being a dot.
+\item  What is the first principle component? Given 1-2 sentences justification. You do not need to run MATLAB to get the answer.
+\item  What is the second principle component? Given 1-2 sentences justification. You do not need to run MATLAB to get the answer.
+\end{itemize}
+
+\item  Experiment: We apply data pre-processing techniques to a collection of handwritten digit images from the USPS dataset (data in MATLAB format: USPS.mat) ${ }^1$. You can load the whole dataset into MATLAB by load USPS.mat. The matrix $A$ contains all the images of size 16 by 16. Each of the 3000 rows in $A$ corresponds to the image of one handwritten digit (between 0 and 9). To visualize a particular image, such as the second one, first you need to convert the vector representation of the image to the matrix representation by $A 2=$ reshape $(A(2,:), 16,16)$, and then use imshow $\left(A 2^{\prime}\right)$ for visualization.
+
+Implement Principal Component Analysis (PCA) using SVD and apply to the data using $p=10,50,100,200$ principal components. Reconstruct images using the selected principal components from part 1.
+
+\begin{itemize}
+\item Show the source code links for parts 1 and 2 to your github account.
+\item  The total reconstruction error for $p=10,50,100,200$.
+\item  A subset (the first two) of the reconstructed images for $p=10,50,100,200$.
+Note: The USPS dataset is available at http://www. csie.ntu.edu.tw/ cjlin/libsvmtools/ datasets/multiclass.html\#usps. The image size is 16 by 16 , thus the data dimensionality of the original dataset is 256 . We used a subset of 3000 images in this homework.
+\end{itemize}
+\end{enumerate}
+
+\textbf{Sol:}
+
+\end{document}
