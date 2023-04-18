@@ -1,6 +1,12 @@
 clear all
 clc
 close all
+
+x=[0, -1, -3, 1,3];
+y=[0,2,6,-2,-6];
+
+plot(x,y,'o')
+saveas(gcf, strcat('Results/PCA/plotintial.png'));
 USPS_data = importdata('Data/USPS.mat');
 USPS_mat = USPS_data.A;
 p_comb = [10, 50, 100, 200];    % number of principal components considered
